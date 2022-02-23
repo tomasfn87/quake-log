@@ -12,12 +12,19 @@ func main() {
 	file.Path = "./Quake.txt"
 
 	indentation := ",.,."
-	indentationInput := os.Args
-	if len(indentationInput) > 1 {
-		indentation = indentationInput[1]
+	char := " "
+	input := os.Args
+
+	if len(input) >= 2 {
+		indentation = input[1]
 	}
-	fmt.Println("\nIndented JSON Data:")
-	file.GetIndentedJsonQuakeLogs(fillWithTimes(" ", len(indentation)))
+
+	if len(input) >= 3 {
+		char = input[2]
+	}
+
+	fmt.Println("Indented JSON Data:")
+	file.PrintIndentedJsonQuakeLogs(fillWithTimes(char, len(indentation)))
 }
 
 func fillWithTimes(char string, size int) string {

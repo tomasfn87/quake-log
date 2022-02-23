@@ -131,7 +131,7 @@ func cleanRepeatedOldNames(arr []string, currentName string) []string {
 }
 
 func parseDataFromFileLines(logLines []string, qgl []QuakeGameLog) []QuakeGameLog {
-	gameCount := 0
+	var gameCount int
 	for _, v := range logLines {
 		lineContent := strings.Split(v, " ")
 		for _, y := range lineContent {
@@ -158,7 +158,6 @@ func parseDataFromFileLines(logLines []string, qgl []QuakeGameLog) []QuakeGameLo
 
 					if playerListContainsId(qgl[gameCount].Status.Players, id) {
 						pl := getPlayerIndexByIdFromPlayerList(qgl[gameCount].Status.Players, id)
-
 						qgl[gameCount].Status.Players[pl].OldNames = []string{}
 
 						if !playerListContainsNome(qgl[gameCount].Status.Players, nome) {
@@ -172,6 +171,7 @@ func parseDataFromFileLines(logLines []string, qgl []QuakeGameLog) []QuakeGameLo
 						if !playerListContainsNome(qgl[gameCount].Status.Players, nome) {
 							qgl[gameCount].Status.Players[pl].Nome = nome
 						}
+
 						qgl[gameCount].Status.Players[pl].OldNames =
 							cleanRepeatedOldNames(qgl[gameCount].Status.Players[pl].OldNames, qgl[gameCount].Status.Players[pl].Nome)
 					} else {
@@ -190,6 +190,8 @@ func parseDataFromFileLines(logLines []string, qgl []QuakeGameLog) []QuakeGameLo
 
 					kill := strings.Split(killRE.ReplaceAllString(v, `$6   :   $7   :   $8`), "   :   ")
 					killer, victim := kill[0], kill[1]
+
+					// "cause" stores the source weapon / "<world>" inflinged cause of death
 					//cause := kill[2]
 					// fmt.Printf("v{%s} k{%s} c{%s}\n", victim, killer, cause)
 					for k, p := range qgl[gameCount].Status.Players {
