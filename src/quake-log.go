@@ -41,28 +41,26 @@ func NewPlayer(p Player) *Player {
 
 func (ql QuakeLogFile) OpenQuakeLog() []QuakeGameLog {
 	file, err := os.Open(ql.Path)
-	if err != nil {
-		panic(err)
-	}
+	PanicIf(err)
 	defer file.Close()
 
-	logLines := getFileValues(file)
+	quakeLogFileLines := getDataFromFileLines(file)
 	quakeGames := []QuakeGameLog{}
-	quakeGames = parseDataFromFileLines(logLines, quakeGames)
+	quakeGames = parseDataFromFileLines(quakeLogFileLines, quakeGames)
 
 	return quakeGames
 }
 
-func getFileValues(file *os.File) []string {
+func getDataFromFileLines(file *os.File) []string {
 	scanner := bufio.NewScanner(file)
-	logLines := []string{}
+	fileLines := []string{}
 	for scanner.Scan() {
-		logLines = append(logLines, scanner.Text())
+		fileLines = append(fileLines, scanner.Text())
 	}
 	if err := scanner.Err(); err != nil {
 		PanicIf(err)
 	}
-	return logLines
+	return fileLines
 }
 
 func PanicIf(err error) {
