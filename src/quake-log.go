@@ -3,7 +3,6 @@ package quakeLog
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -75,7 +74,7 @@ func (qlf QuakeLogFile) OpenQuakeLog() {
 				}
 			case "ClientUserinfoChanged:":
 				{
-					clientUserinfoChanged := strings.Split(clientUserinfoChangedRE.ReplaceAllString(v, `$2  :  $4`), "  :  ")
+					clientUserinfoChanged := strings.Split(clientUserinfoChangedRE.ReplaceAllString(v, `$2   :   $4`), "   :   ")
 					id, err := strconv.Atoi(clientUserinfoChanged[0])
 					panicIf(err)
 					id--
@@ -91,12 +90,11 @@ func (qlf QuakeLogFile) OpenQuakeLog() {
 							}
 							quakeGames[gameCount].Status.Players.List[pl].Nome = nome
 						}
-
-						// fmt.Println(quakeGames[gameCount].Status.Players.List[pl].OldNames)
-
 						if !playerListContainsNome(quakeGames[gameCount].Status.Players.List, nome) {
 							quakeGames[gameCount].Status.Players.List[pl].Nome = nome
 						}
+						quakeGames[gameCount].Status.Players.List[pl].OldNames =
+							cleanRepeatedOldNames(quakeGames[gameCount].Status.Players.List[pl].OldNames, quakeGames[gameCount].Status.Players.List[pl].Nome)
 					} else {
 						quakeGames[gameCount].Status.Players.List = append(quakeGames[gameCount].Status.Players.List, Player{Nome: nome, Id: id})
 					}
@@ -107,7 +105,7 @@ func (qlf QuakeLogFile) OpenQuakeLog() {
 			case "Kill:":
 				{
 					quakeGames[gameCount].Status.TotalKills++
-					kill := strings.Split(killRE.ReplaceAllString(v, `$6  :  $7  :  $8`), "  :  ")
+					kill := strings.Split(killRE.ReplaceAllString(v, `$6   :   $7   :   $8`), "   :   ")
 					killer, victim := kill[0], kill[1]
 					//cause := kill[2]
 					// fmt.Printf("v{%s} k{%s} c{%s}\n", victim, killer, cause)
@@ -142,7 +140,7 @@ func getFileValues(file *os.File) []string {
 		logLines = append(logLines, scanner.Text())
 	}
 	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+		panicIf(err)
 	}
 	return logLines
 }
@@ -197,4 +195,14 @@ func oldNamesContainsNome(arr []string, nome string) bool {
 		}
 	}
 	return false
+}
+
+func cleanRepeatedOldNames(arr []string, currentName string) []string {
+	cleanedOldNames := []string{}
+	for _, v := range arr {
+		if v != currentName {
+			cleanedOldNames = append(cleanedOldNames, v)
+		}
+	}
+	return cleanedOldNames
 }
