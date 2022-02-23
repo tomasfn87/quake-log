@@ -15,28 +15,28 @@ type QuakeLogFile struct {
 }
 
 type QuakeGameLog struct {
-	Game   int
-	Status Status
+	Game   int    `json:"game"`
+	Status Status `json:"status"`
 }
 
 type Status struct {
-	TotalKills int
-	Players    Players
-}
-
-type Players struct {
-	List []Player
+	TotalKills int      `json:"total_kills"`
+	Players    []Player `json:"players"`
 }
 
 type Player struct {
-	Id       int
-	Nome     string
-	Kills    int
-	OldNames []string
+	Id       int      `json:"id"`
+	Nome     string   `json:"nome"`
+	Kills    int      `json:"kills"`
+	OldNames []string `json:"old_names"`
 }
 
 func NewQuakeLog() *QuakeGameLog {
 	return &QuakeGameLog{}
+}
+
+func NewPlayer(p Player) *Player {
+	return &Player{Nome: p.Nome, Id: p.Id}
 }
 
 func (ql QuakeLogFile) OpenQuakeLog() []QuakeGameLog {
@@ -60,12 +60,12 @@ func getFileValues(file *os.File) []string {
 		logLines = append(logLines, scanner.Text())
 	}
 	if err := scanner.Err(); err != nil {
-		panicIf(err)
+		PanicIf(err)
 	}
 	return logLines
 }
 
-func panicIf(err error) {
+func PanicIf(err error) {
 	if err != nil {
 		panic(err)
 	}
@@ -145,54 +145,59 @@ func parseDataFromFileLines(logLines []string, qgl []QuakeGameLog) []QuakeGameLo
 				{
 					var clientUserinfoChangedRE *regexp.Regexp
 					clientUserinfoChangedRE, err := regexp.Compile(`^(.*) (\d+)( n\\)(.+)(\\t\\)(.*)$`)
-					panicIf(err)
+					PanicIf(err)
+
 					clientUserinfoChanged := strings.Split(clientUserinfoChangedRE.ReplaceAllString(v, `$2   :   $4`), "   :   ")
 					id, err := strconv.Atoi(clientUserinfoChanged[0])
-					panicIf(err)
+					PanicIf(err)
 					id--
 					nome := clientUserinfoChanged[1]
 
-					if playerListContainsId(qgl[gameCount].Status.Players.List, id) {
-						pl := getPlayerIndexByIdFromPlayerList(qgl[gameCount].Status.Players.List, id)
+					if playerListContainsId(qgl[gameCount].Status.Players, id) {
+						pl := getPlayerIndexByIdFromPlayerList(qgl[gameCount].Status.Players, id)
 
-						if !playerListContainsNome(qgl[gameCount].Status.Players.List, nome) {
-							if !oldNamesContainsNome(qgl[gameCount].Status.Players.List[pl].OldNames, qgl[gameCount].Status.Players.List[pl].Nome) {
-								qgl[gameCount].Status.Players.List[pl].OldNames =
-									append(qgl[gameCount].Status.Players.List[pl].OldNames, qgl[gameCount].Status.Players.List[pl].Nome)
+						qgl[gameCount].Status.Players[pl].OldNames = []string{}
+
+						if !playerListContainsNome(qgl[gameCount].Status.Players, nome) {
+							if !oldNamesContainsNome(qgl[gameCount].Status.Players[pl].OldNames, qgl[gameCount].Status.Players[pl].Nome) {
+								qgl[gameCount].Status.Players[pl].OldNames =
+									append(qgl[gameCount].Status.Players[pl].OldNames, qgl[gameCount].Status.Players[pl].Nome)
 							}
-							qgl[gameCount].Status.Players.List[pl].Nome = nome
+							qgl[gameCount].Status.Players[pl].Nome = nome
 						}
-						if !playerListContainsNome(qgl[gameCount].Status.Players.List, nome) {
-							qgl[gameCount].Status.Players.List[pl].Nome = nome
+
+						if !playerListContainsNome(qgl[gameCount].Status.Players, nome) {
+							qgl[gameCount].Status.Players[pl].Nome = nome
 						}
-						qgl[gameCount].Status.Players.List[pl].OldNames =
-							cleanRepeatedOldNames(qgl[gameCount].Status.Players.List[pl].OldNames, qgl[gameCount].Status.Players.List[pl].Nome)
+						qgl[gameCount].Status.Players[pl].OldNames =
+							cleanRepeatedOldNames(qgl[gameCount].Status.Players[pl].OldNames, qgl[gameCount].Status.Players[pl].Nome)
 					} else {
-						qgl[gameCount].Status.Players.List = append(qgl[gameCount].Status.Players.List, Player{Nome: nome, Id: id})
+						newPlayer := NewPlayer(Player{Nome: nome, Id: id})
+						newPlayer.OldNames = []string{} // need to initialize empty array to remove null from JSON
+						qgl[gameCount].Status.Players = append(qgl[gameCount].Status.Players, *newPlayer)
 					}
-
-					// fmt.Printf("id{%d} type:%T, nome{%s} type:%T\n", id, id, nome, nome)
-
 				}
 			case "Kill:":
 				{
+					qgl[gameCount].Status.TotalKills++
+
 					var killRE *regexp.Regexp
 					killRE, err := regexp.Compile(`^(.*)( Kill: )(\d+) (\d+) (\d+:) (.+) killed (.+) by (.*)$`)
-					panicIf(err)
-					qgl[gameCount].Status.TotalKills++
+					PanicIf(err)
+
 					kill := strings.Split(killRE.ReplaceAllString(v, `$6   :   $7   :   $8`), "   :   ")
 					killer, victim := kill[0], kill[1]
 					//cause := kill[2]
 					// fmt.Printf("v{%s} k{%s} c{%s}\n", victim, killer, cause)
-					for k, p := range qgl[gameCount].Status.Players.List {
+					for k, p := range qgl[gameCount].Status.Players {
 						if killer != "<world>" && killer == p.Nome {
-							qgl[gameCount].Status.Players.List[k].Kills++
+							qgl[gameCount].Status.Players[k].Kills++
 						}
 					}
 					if killer == "<world>" {
-						for k, p := range qgl[gameCount].Status.Players.List {
+						for k, p := range qgl[gameCount].Status.Players {
 							if p.Nome == victim {
-								qgl[gameCount].Status.Players.List[k].Kills--
+								qgl[gameCount].Status.Players[k].Kills--
 							}
 
 						}
