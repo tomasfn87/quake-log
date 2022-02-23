@@ -6,22 +6,22 @@ import (
 )
 
 func (ql QuakeLogFile) GetJsonQuakeLogs() {
-	quakeGameLog := ql.OpenQuakeLog()
-	/*for _, v := range quakeGameLog {
-		fmt.Println(v)
-	}
-	fmt.Printf("type of var quakeGames: %T\n", quakeGameLog)
-	*/
-	jsonString := "["
-	for i := 0; i < len(quakeGameLog); i++ {
-		json, err := json.Marshal(quakeGameLog[i])
-		PanicIf(err)
-		if i == len(quakeGameLog) {
-			jsonString += string(json)
-		} else {
-			jsonString += fmt.Sprintf("%s,", json)
-		}
-	}
-	jsonString += "]"
-	fmt.Println(jsonString)
+	quakeGameLogFile := NewQuakeLogFile()
+	quakeGameLogFile.Games = ql.OpenQuakeLog()
+
+	fmt.Println("\nIndented JSON Data:")
+	json, err := json.Marshal(quakeGameLogFile.Games)
+	PanicIf(err)
+
+	fmt.Printf("%s\n", json)
+}
+
+func (ql QuakeLogFile) GetIndentedJsonQuakeLogs(indentation string) {
+	quakeGameLogFile := NewQuakeLogFile()
+	quakeGameLogFile.Games = ql.OpenQuakeLog()
+
+	indentedJson, err := json.MarshalIndent(quakeGameLogFile.Games, "", indentation)
+	PanicIf(err)
+
+	fmt.Printf("%s\n", indentedJson)
 }

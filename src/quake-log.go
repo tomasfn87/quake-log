@@ -11,7 +11,8 @@ import (
 // ClientUserinfoChanged // this func must return the player name
 
 type QuakeLogFile struct {
-	Path string
+	Path  string
+	Games []QuakeGameLog `json:"quake_game_logs"`
 }
 
 type QuakeGameLog struct {
@@ -31,12 +32,16 @@ type Player struct {
 	OldNames []string `json:"old_names"`
 }
 
-func NewQuakeLog() *QuakeGameLog {
+func NewQuakeGameLog() *QuakeGameLog {
 	return &QuakeGameLog{}
 }
 
 func NewPlayer(p Player) *Player {
 	return &Player{Nome: p.Nome, Id: p.Id}
+}
+
+func NewQuakeLogFile() *QuakeLogFile {
+	return &QuakeLogFile{}
 }
 
 func (ql QuakeLogFile) OpenQuakeLog() []QuakeGameLog {
