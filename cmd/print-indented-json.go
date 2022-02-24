@@ -23,7 +23,7 @@ func main() {
 	}
 
 	fmt.Println("Indented JSON Data:")
-	file.PrintIndentedJsonQuakeLogs(fillWithTimes(char, len(indentation)))
+	file.PrintIndentedJsonQuakeLogs(fillWithTimes(char[0:1], len(indentation)))
 }
 
 func fillWithTimes(char string, size int) string {
