@@ -7,8 +7,7 @@ import (
 )
 
 func main() {
-	file := quakeLog.NewQuakeLogFile()
-	file.Path = "./Quake.txt"
+	file := quakeLog.NewQuakeLogFile(quakeLog.QuakeLogFile{Path: "./Quake.txt"})
 
 	fmt.Println("JSON String:")
 	file.PrintJsonQuakeLogs()

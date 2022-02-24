@@ -8,8 +8,7 @@ import (
 )
 
 func main() {
-	file := quakeLog.NewQuakeLogFile()
-	file.Path = "./Quake.txt"
+	file := quakeLog.NewQuakeLogFile(quakeLog.QuakeLogFile{Path: "./Quake.txt"})
 
 	indentation := ",.,."
 	char := " "

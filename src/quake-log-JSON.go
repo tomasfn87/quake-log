@@ -6,8 +6,7 @@ import (
 )
 
 func (ql QuakeLogFile) PrintJsonQuakeLogs() {
-	quakeGameLogFile := NewQuakeLogFile()
-	quakeGameLogFile.Games = ql.OpenQuakeLog()
+	quakeGameLogFile := NewQuakeLogFile(QuakeLogFile{Games: ql.OpenQuakeLog()})
 
 	json, err := json.Marshal(quakeGameLogFile.Games)
 	PanicIf(err)
@@ -15,8 +14,7 @@ func (ql QuakeLogFile) PrintJsonQuakeLogs() {
 }
 
 func (ql QuakeLogFile) PrintIndentedJsonQuakeLogs(indentation string) {
-	quakeGameLogFile := NewQuakeLogFile()
-	quakeGameLogFile.Games = ql.OpenQuakeLog()
+	quakeGameLogFile := NewQuakeLogFile(QuakeLogFile{Games: ql.OpenQuakeLog()})
 
 	indentedJson, err := json.MarshalIndent(quakeGameLogFile.Games, "", indentation)
 	PanicIf(err)

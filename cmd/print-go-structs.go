@@ -7,8 +7,7 @@ import (
 )
 
 func main() {
-	file := quakeLog.NewQuakeLogFile()
-	file.Path = "./Quake.txt"
+	file := quakeLog.NewQuakeLogFile(quakeLog.QuakeLogFile{Path: "./Quake.txt"})
 
 	fmt.Println("GO Structs:")
 	quakeGamesLog := file.OpenQuakeLog()

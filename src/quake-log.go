@@ -30,8 +30,8 @@ type Player struct {
 	OldNames []string `json:"old_names"`
 }
 
-func NewQuakeLogFile() *QuakeLogFile {
-	return &QuakeLogFile{}
+func NewQuakeLogFile(qlf QuakeLogFile) *QuakeLogFile {
+	return &QuakeLogFile{Path: qlf.Path, Games: qlf.Games}
 }
 
 func NewQuakeGameLog(qgl QuakeGameLog) *QuakeGameLog {
@@ -46,11 +46,9 @@ func (qlf QuakeLogFile) OpenQuakeLog() []QuakeGameLog {
 	file, err := os.Open(qlf.Path)
 	PanicIf(err)
 	defer file.Close()
-
 	quakeLogFileLines := getDataFromFileLines(file)
 	quakeGames := []QuakeGameLog{}
 	quakeGames = parseDataFromFileLines(quakeLogFileLines, quakeGames)
-
 	return quakeGames
 }
 
@@ -93,7 +91,7 @@ func parseDataFromFileLines(quakeLogFileLines []string, qgl []QuakeGameLog) []Qu
 				// Game has ended
 				gameCount++
 			} else if y == "ClientUserinfoChanged:" {
-				// Client may have changed name; store old names avoiding repetition (remove current name it previously stored)
+				// Client may have changed name; store old names avoiding repetition (remove current name if previously stored)
 				clientUserinfoChanged := strings.Split(clientUserinfoChangedRE.ReplaceAllString(v, `$2  :  $4`), "  :  ")
 				id, err := strconv.Atoi(clientUserinfoChanged[0])
 				PanicIf(err)
