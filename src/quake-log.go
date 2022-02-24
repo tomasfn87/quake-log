@@ -94,7 +94,7 @@ func parseDataFromFileLines(quakeLogFileLines []string, qgl []QuakeGameLog) []Qu
 				gameCount++
 			} else if y == "ClientUserinfoChanged:" {
 				// Client may have changed name; store old names avoiding repetition (remove current name it previously stored)
-				clientUserinfoChanged := strings.Split(clientUserinfoChangedRE.ReplaceAllString(v, `$2   :   $4`), "   :   ")
+				clientUserinfoChanged := strings.Split(clientUserinfoChangedRE.ReplaceAllString(v, `$2  :  $4`), "  :  ")
 				id, err := strconv.Atoi(clientUserinfoChanged[0])
 				PanicIf(err)
 				id-- // Player IDs start at 2
@@ -104,7 +104,7 @@ func parseDataFromFileLines(quakeLogFileLines []string, qgl []QuakeGameLog) []Qu
 
 				if playerListContainsId(players, id) {
 					// Current ID already  exists; player might have changed names
-					pl := getPlayerIndexByIdFromPlayerList(players, id)
+					pl := getPlayerIndexByIdFromPlayerList(id, players)
 					currentNome := &qgl[gameCount].Status.Players[pl].Nome
 					oldNames := &qgl[gameCount].Status.Players[pl].OldNames
 
@@ -122,25 +122,26 @@ func parseDataFromFileLines(quakeLogFileLines []string, qgl []QuakeGameLog) []Qu
 					qgl[gameCount].Status.Players = append(qgl[gameCount].Status.Players, *newPlayer)
 				}
 			} else if y == "Kill:" {
-				// Adding and removing kills for each player
+				// Add kills for each player kill, remove player kills if killer is "<world>"
 				qgl[gameCount].Status.TotalKills++
 				players := qgl[gameCount].Status.Players
+				kill := strings.Split(killRE.ReplaceAllString(v, `$3  :  $4  :  $6`), "  :  ")
 
-				kill := strings.Split(killRE.ReplaceAllString(v, `$6   :   $7   :   $8`), "   :   ")
-				killer, victim := kill[0], kill[1]
+				killerId, err := strconv.Atoi(kill[0])
+				PanicIf(err)
+				killerIndex := getPlayerIndexByIdFromPlayerList(killerId, players)
+				killerName := kill[2]
 
-				for k, p := range players {
-					if killer != "<world>" && killer == p.Nome {
-						players[k].Kills++
-					}
+				victimId, err := strconv.Atoi(kill[1])
+				PanicIf(err)
+				victimIndex := getPlayerIndexByIdFromPlayerList(victimId, players)
+
+				if killerId != 1022 {
+					players[killerIndex].Kills++
 				}
 
-				if killer == "<world>" {
-					for k, p := range qgl[gameCount].Status.Players {
-						if p.Nome == victim {
-							players[k].Kills--
-						}
-					}
+				if killerName == "<world>" {
+					players[victimIndex].Kills--
 				}
 			}
 		}
@@ -160,9 +161,9 @@ func playerListContainsId(arr []Player, item int) bool {
 	return false
 }
 
-func getPlayerIndexByIdFromPlayerList(arr []Player, id int) int {
+func getPlayerIndexByIdFromPlayerList(id int, playerList []Player) int {
 	var playerIndex int
-	for k, v := range arr {
+	for k, v := range playerList {
 		if v.Id == id {
 			playerIndex = k
 		}
