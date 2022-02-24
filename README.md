@@ -25,7 +25,7 @@ Em sistemas Debian (Ubuntu, Mint):<br>
 <hr>
 <br>
 <h3>Argumentos de linha de comando #1:</h3>
-
+<h4>Alterando a indentação: comprimento e caracter</h4>
 <p style="font-size: 0.97em; color: #77f;"><i>O arquivo</i> <b style="font-size: 1.05em; color: #fa3;">cmd/print-indented-json.go</b> <i>aceita como primeiro e segundo argumentos duas strings</i>:</p>
 
 * O comprimento da primeira string será o comprimento da indentação
@@ -47,6 +47,7 @@ Em sistemas Debian (Ubuntu, Mint):<br>
 <br>
 <hr>
 <h3>Argumentos de linha de comando #2:</h3>
+<h4>Obter JSON indentado de um jogo específico</h4>
 <p style="font-size: 0.97em; color: #77f;"><i>O arquivo</i> <b style="font-size: 1.05em; color: #fa3;">cmd/print-single-indented-json-game-log.go</b> <i>aceita como único argumento um inteiro:</i></p>
 
 * O inteiro é usado para definir qual jogo deverá ser exibido
